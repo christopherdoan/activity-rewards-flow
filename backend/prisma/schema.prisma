@@ -8,12 +8,15 @@ datasource db {
 }
 
 model User {
-  id             Int      @id @default(autoincrement())
-  email          String?  @unique
+  id             Int           @id @default(autoincrement())
+  email          String        @unique
   name           String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
   
+  activities     Activity[]
+  transactions   Transaction[]
+  rewardPoints   RewardPoint?
   stats          UserStats?
 }
 
@@ -21,8 +24,53 @@ model UserStats {
   id             Int      @id @default(autoincrement())
   userId         Int      @unique
   user           User     @relation(fields: [userId], references: [id])
-  distance       Float    // YTD Distance
-  elevation      Float    // YTD Elevation
-  count          Int      // Total Activities
-  lastUpdated    DateTime @default(now()) // For TTL check
+  distance       Float    @default(0) // YTD Distance
+  elevation      Float    @default(0) // YTD Elevation
+  count          Int      @default(0) // Total Activities
+  lastUpdated    DateTime @default(now())
+}
+
+enum ActivityType {
+  RUN
+  WALK
+  WORKOUT
+}
+
+model Activity {
+  id             Int          @id @default(autoincrement())
+  userId         Int
+  user           User         @relation(fields: [userId], references: [id])
+  type           ActivityType
+  distance       Float        @default(0) // In miles/km
+  duration       Int          @default(0) // In minutes
+  steps          Int          @default(0)
+  date           DateTime     @default(now())
+  costAttributed Float?       // Calculated cost for this activity
+  createdAt      DateTime     @default(now())
+}
+
+enum Category {
+  GEAR
+  SUBSCRIPTION
+  FUEL
+  OTHER
+}
+
+model Transaction {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  amount      Float
+  category    Category
+  description String?
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+}
+
+model RewardPoint {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique
+  user           User     @relation(fields: [userId], references: [id])
+  points         Int      @default(0)
+  lastCalculated DateTime @default(now())
 }
