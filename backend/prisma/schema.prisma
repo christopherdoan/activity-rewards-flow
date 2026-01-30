@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int      @id @default(autoincrement())
+  email          String?  @unique
+  name           String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  stats          UserStats?
+}
+
+model UserStats {
+  id             Int      @id @default(autoincrement())
+  userId         Int      @unique
+  user           User     @relation(fields: [userId], references: [id])
+  distance       Float    // YTD Distance
+  elevation      Float    // YTD Elevation
+  count          Int      // Total Activities
+  lastUpdated    DateTime @default(now()) // For TTL check
+}
